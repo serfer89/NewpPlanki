@@ -1,57 +1,84 @@
 
+//auth func
+
 var token = function(login, pass, callback) {
-    var Client = require('node-rest-client').Client;
-var querystring = require('querystring');
- 
-// form data
+  var Client = require("node-rest-client").Client;
+  client = new Client();
+  var loginArgs = {
+    data: {
+      login: "380937531134",
+      password: "veronika87"
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  };
+  client.post(
+    "http://test-cab.planetakino.ua/mapiv2/login",
+    loginArgs,
+    function(data, response) {
+      if (response.statusCode == 200) {
+        console.log("status code:", response.statusCode);
+        console.log("search result:", data.data.authToken);
+        callback(data.data.authToken);
+      } else {
+        throw "Login failed :(";
+      }
+    }
+  );
+};
 
-    //this.tempt_session = session;
+//theater func
 
-    client = new Client();
+var theater = function(callback) {
+  var Client = require("node-rest-client").Client;
+  client = new Client();
+  var loginArgs = {
+    headers: {
+      "Content-Type": "application/json"
+    }
+  };
+  client.get("http://cabinet.planetakino.ua/mapiv2/theater", loginArgs, function(data, response) {
+      if (response.statusCode == 200) {
+        //console.log("status code:", response.statusCode);
+        //console.log("search result:", data);
+        callback(data);
+      } else {
+	console.log(response.statusCode);
+        //throw "Login failed :(";
+      }
+    }
+  );
+};
 
-    // Provide user credentials, which will be used to log in to JIRA.
 
-    var loginArgs = {
-	data: {
- 	
-            login: "380937531134",
-            password: "veronika87"
-        },
-        headers: {
-            "Content-Type": "application/json",
-        }       
 
-    };
+//http://cabinet.planetakino.ua/mapiv2/showtimes?theaterId=pk-lvov2&endDate=2017-09-16&startDate=2017-09-15
 
-    client.post("http://test-cab.planetakino.ua/mapiv2/login", loginArgs, function(data, response) {
-        if (response.statusCode == 200) {
 
-            
-            // Get the session information and store it in a cookie in the header
-                            /*     data: {
-                // Provide additional data for the JIRA search. You can modify the JQL to search for whatever you want.
-                                jql: "project='BOT'"
-                        }*/
-            
-            // Make the request return the search results, passing the header information including the cookie.
-            /*  client.post("http://planetakino.atlassian.net/rest/api/2/project", searchArgs, function(searchResult, response) {
-                        console.log('status code:', response.statusCode);
-                        console.log('search result:', searchResult.length);
-      var i=searchResult.length;
-         searchResult.forEach(function(item, i, searchResult) { console.log( searchResult[i].name );});
-                        console.log('search result:', searchResult[1].name);
-                });*/
-                        console.log('status code:', response.statusCode);
-                        console.log('search result:', data.data.authToken);
-callback(data.data.authToken);
-        } else {
-            throw "Login failed :(";
-        }
+//showtimes
 
-    });
-
-}
-
+var showtimes = function(theaterId, start, end, callback) {
+  var Client = require("node-rest-client").Client;
+  client = new Client();
+  var loginArgs = {
+    headers: {
+      "Content-Type": "application/json"
+    }
+  };
+  client.get("http://cabinet.planetakino.ua/mapiv2/showtimes?theaterId="+theaterId+"&endDate="+end+"&startDate="+start, loginArgs, function(data, response) {
+      if (response.statusCode == 200) {
+        //console.log("status code:", response.statusCode);
+//	console.log();
+        //console.log("search result:", data.data.showTimes.length);
+        callback(data);
+      } else {
+	console.log(response.statusCode);
+        //throw "Login failed :(";
+      }
+    }
+  );
+};
 
 /*
 var request = require("request");
@@ -72,7 +99,8 @@ var token = body.data;
 
 
 */
-
-
+//showtimes('imax-kiev', '2017-09-15', '2017-09-16');
+module.exports.showtimes = showtimes;
+module.exports.theater = theater;
 module.exports.token = token;
 

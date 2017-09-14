@@ -1,39 +1,56 @@
-const TelegramBot = require('node-telegram-bot-api');
+const TelegramBot = require("node-telegram-bot-api");
 var auth = require("./con.js");
-// replace the value below with the Telegram token you receive from @BotFather 
-const token = '438526782:AAF4JxfUKnhbd2HKe0k-DcMOkUJiXlsLEzc';
+// replace the value below with the Telegram token you receive from @BotFather
+const token = "438526782:AAF4JxfUKnhbd2HKe0k-DcMOkUJiXlsLEzc";
 var login = "380937531134";
 var pass = "veronika87";
 var authToken;
-// Create a bot that uses 'polling' to fetch new updates 
-const bot = new TelegramBot(token, {polling: true});
- 
-// Matches "/echo [whatever]" 
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, { polling: true });
 
-var getToken = auth.token(login, pass, function(response) {
-  console.log("authToken = "+response);
+// Matches "/echo [whatever]"
+
+/*var getToken = auth.token(login, pass, function(response) {
+  console.log("authToken = " + response);
   authToken = response;
+});*/
+
+var getTheaters = auth.theater(function(response) {
+  console.log(response.data.length);
+  for (var i = 0; i < response.data.length; i++) {
+    for (var x = 0; x < response.data[i].theater.length; x++) {
+      console.log(response.data[i].theater[x].name);
+    }
+  }
+});
+
+var theaterId = 'imax-kiev';
+var startDate = '2017-09-15';
+var endDate = '2017-09-16';
+var getshowtimes = auth.showtimes(theaterId, startDate, endDate, function(response) {
+  console.log("Сьогодні - "+response.data.showTimes.length+ " сеанси");
+
 });
 
 
 bot.onText(/\/echo (.+)/, (msg, match) => {
-  // 'msg' is the received Message from Telegram 
-  // 'match' is the result of executing the regexp above on the text content 
-  // of the message 
- 
+  // 'msg' is the received Message from Telegram
+  // 'match' is the result of executing the regexp above on the text content
+  // of the message
+
   const chatId = msg.chat.id;
-  const resp = match[1]; // the captured "whatever" 
- 
-  // send back the matched "whatever" to the chat 
+  const resp = match[1]; // the captured "whatever"
+
+  // send back the matched "whatever" to the chat
   bot.sendMessage(chatId, resp);
 });
- 
-// Listen for any kind of message. There are different kinds of 
-// messages. 
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
- 
-  // send a message to the chat acknowledging receipt of their message 
-  bot.sendMessage(chatId, 'Received your message');
 
+// Listen for any kind of message. There are different kinds of
+// messages.
+bot.on("message", msg => {
+  const chatId = msg.chat.id;
+
+  // send a message to the chat acknowledging receipt of their message
+  bot.sendMessage(chatId, "Received your message");
 });
+
