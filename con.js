@@ -2,12 +2,14 @@
 //auth func
 
 var token = function(login, pass, callback) {
+
   var Client = require("node-rest-client").Client;
   client = new Client();
+//console.log("login="+login+" pass="+pass)
   var loginArgs = {
     data: {
-      login: "380937531134",
-      password: "veronika87"
+      login: login,
+      password: pass
     },
     headers: {
       "Content-Type": "application/json"
@@ -17,12 +19,13 @@ var token = function(login, pass, callback) {
     "http://test-cab.planetakino.ua/mapiv2/login",
     loginArgs,
     function(data, response) {
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && data.code == '1') {
         console.log("status code:", response.statusCode);
         console.log("search result:", data.data.authToken);
+	//console.log(data.code);
         callback(data.data.authToken);
       } else {
-        throw "Login failed :(";
+        callback(-1);
       }
     }
   );
