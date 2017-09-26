@@ -83,6 +83,32 @@ var showtimes = function(theaterId, start, end, callback) {
   );
 };
 
+var films = function (auth_string, callback)
+
+{
+
+var Client = require('node-rest-client').Client;
+
+    client = new Client();
+            var searchArgs = {
+                headers: {
+                    // Set the cookie from the session information
+                    "Content-Type": "application/json"
+                },};
+
+ client.get("http://cabinet.planetakino.ua/mapiv2/movies?theaterId=imax-kiev",searchArgs, function(searchResult, response) {
+                        console.log('status code:', response.statusCode);
+                        console.log('search result:', searchResult.data.theaters[0].theatre_movies.inTheaters.movies.length);
+      //var i=searchResult.length;
+         //searchResult.forEach(function(item, i, searchResult) { console.log( searchResult[i].name );});
+                        //console.log('search result:', searchResult[1].name);
+      callback(searchResult);
+                });
+
+}
+
+
+
 /*
 var request = require("request");
 var values = require('object.values');
@@ -106,4 +132,6 @@ var token = body.data;
 module.exports.showtimes = showtimes;
 module.exports.theater = theater;
 module.exports.token = token;
+module.exports.films = films;
+
 
