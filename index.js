@@ -10,6 +10,9 @@ var pass_fail = 1;
 var authToken;
 var startDate;
 var endDate;
+var date_but = [];
+var cur_day;
+var cur_city;
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
@@ -20,44 +23,41 @@ const bot = new TelegramBot(token, { polling: true });
   authToken = response;
 });*/
 
-function films(id)
-
-{
-
-console.log("films started");
-get_films = auth.films(auth_string, function(response)
-
-{
+function films(id, theater) {
+  "use strict";
+  console.log("films started");
+  get_films = auth.films(id, theater, function(response) {
     var but_films = []; //
 
-for (var i = 0; i < response.data.theaters[0].theatre_movies.inTheaters.movies.length; i++)
-{
-console.log(response.data.theaters[0].theatre_movies.inTheaters.movies[i].name);
+    for (
+      var i = 0;
+      i < response.data.theaters[0].theatre_movies.inTheaters.movies.length;
+      i++
+    ) {
+      console.log(
+        response.data.theaters[0].theatre_movies.inTheaters.movies[i].name
+      );
 
-	 but_films.push([{
-        text: response.data.theaters[0].theatre_movies.inTheaters.movies[i].name,
-        callback_data: response.data.theaters[0].theatre_movies.inTheaters.movies[i].id
-      }]);}
-	  
+      but_films.push([
+        {
+          text:
+          response.data.theaters[0].theatre_movies.inTheaters.movies[i].name,
+          callback_data:
+          response.data.theaters[0].theatre_movies.inTheaters.movies[i].id
+        }
+      ]);
+    }
 
-
-
-console.log(but_films);
+    console.log(but_films);
     var jira_films = {
-
       reply_markup: JSON.stringify({
         inline_keyboard: but_films
-    })
-	};
-    let mes_text = 'Удача Лохана (16+)'+'<a href=http://planetakino.ua/f/1/movies/logan_lucky/Logan-Lucky-poster2-vend.R320x480.jpg>Poster</a>';
-    bot.sendMessage(id, mes_text,jira_films);
-
-
-
-});
-
+      })
+    };
+    let mes_text = "Обирай фільм";
+    bot.sendMessage(id, mes_text, jira_films);
+  });
 }
-
 
 function getLP(msg) {
   var fromId = msg.from.id;
@@ -106,10 +106,7 @@ function getLP(msg) {
                   );
                   getLP(msg);
                 } else {
-                  bot.sendMessage(
-                    chatId,
-                    "Все ок, поїхали далі"
-                  ); 
+                  bot.sendMessage(chatId, "Все ок, поїхали далі");
                   return authToken;
                 }
               });
@@ -129,6 +126,7 @@ function getLP(msg) {
 }
 
 var getTheaters = auth.theater(function(response) {
+  "use strict";
   console.log(response.data.length);
   for (var i = 0; i < response.data.length; i++) {
     for (var x = 0; x < response.data[i].theater.length; x++) {
@@ -139,32 +137,85 @@ var getTheaters = auth.theater(function(response) {
 
 var theaterId = "imax-kiev";
 
-function today()
+function today() {
+  var now = new Date();
+  var startOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1
+  );
+  var timestamp = startOfDay / 1000 - 10800; // GMT+3
+  var next_day = timestamp + 86400;
+  var next2_day = next_day + 86400;
+  var next3_day = next2_day + 86400;
+  console.log(timestamp);
+  console.log(timestamp + 86400);
 
-{
+  function u_to_js(timestamp) {
+    var date = new Date(timestamp * 1000);
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDay();
+    if (month < 10) {
+      month = "0" + month;
+    }
+    var date = date.getDate();
+    switch (day) {
+      case 0:
+        day = "Неділя";
+        break;
+      case 1:
+        day = "Понеділок";
+        break;
 
+      case 2:
+        day = "Вівторок";
+        break;
 
+      case 3:
+        day = "Середа";
+        break;
 
-var now = new Date();
-var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
-var timestamp = (startOfDay) / 1000;
-console.log(timestamp);
+      case 4:
+        day = "Четвер";
+        break;
 
-function u_to_js(timestamp)
-{
-var date = new Date(timestamp*1000);
-var year=date.getFullYear();
-var month = date.getMonth()+1; if (month < 10) {month = "0"+month;}
-var date = date.getDate();
-var c_date = year+"-"+month+"-"+date;
-return c_date;
-}
+      case 5:
+        day = "П'ятниця";
+        break;
 
-console.log(u_to_js(timestamp));
+      case 6:
+        day = "Субота";
+        break;
+               }
+    var c_date = day + ", " + month + "." + date;
+    return c_date;
+  }
+
+  console.log(u_to_js(timestamp));
+
+  for (var i = 0; i < 4; i++) {
+    switch (i) {
+      case 0:
+        date_but.push([{ text: u_to_js(timestamp) }]);
+        break;
+      case 1:
+        date_but.push([{ text: u_to_js(timestamp + 86400) }]);
+        break;
+      case 2:
+        date_but.push([{ text: u_to_js(timestamp + 86400 * 2) }]);
+        break;
+      case 3:
+        date_but.push([{ text: u_to_js(timestamp + 86400 * 3) }]);
+        break;
+             }
+  }
+
+  console.log(date_but);
+  return date_but;
 }
 
 today();
-
 
 var getshowtimes = auth.showtimes(theaterId, startDate, endDate, function(
                                   response
@@ -207,6 +258,7 @@ bot.onText(/\/start/, function(msg, match) {
         //getname(msgTxt, id);
       } else if (msgTxt == "я просто подивлюсь") {
         bot.sendMessage(id, "Без авторизації Ти не зможеш купти квиток.");
+        films(id, "imax-kiev");
       }
 
       console.log("Counter - " + counter);
