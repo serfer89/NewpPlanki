@@ -20,6 +20,45 @@ const bot = new TelegramBot(token, { polling: true });
   authToken = response;
 });*/
 
+function films(id)
+
+{
+
+console.log("films started");
+get_films = auth.films(auth_string, function(response)
+
+{
+    var but_films = []; //
+
+for (var i = 0; i < response.data.theaters[0].theatre_movies.inTheaters.movies.length; i++)
+{
+console.log(response.data.theaters[0].theatre_movies.inTheaters.movies[i].name);
+
+	 but_films.push([{
+        text: response.data.theaters[0].theatre_movies.inTheaters.movies[i].name,
+        callback_data: response.data.theaters[0].theatre_movies.inTheaters.movies[i].id
+      }]);}
+	  
+
+
+
+console.log(but_films);
+    var jira_films = {
+
+      reply_markup: JSON.stringify({
+        inline_keyboard: but_films
+    })
+	};
+    let mes_text = 'Удача Лохана (16+)'+'<a href=http://planetakino.ua/f/1/movies/logan_lucky/Logan-Lucky-poster2-vend.R320x480.jpg>Poster</a>';
+    bot.sendMessage(id, mes_text,jira_films);
+
+
+
+});
+
+}
+
+
 function getLP(msg) {
   var fromId = msg.from.id;
   bot
