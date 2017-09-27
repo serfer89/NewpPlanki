@@ -12,7 +12,9 @@ var startDate;
 var endDate;
 var date_but = [];
 var cur_day;
-var cur_city;
+var cur_theatre;
+var cur_theatre_id;
+var chat_id;
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
@@ -22,6 +24,119 @@ const bot = new TelegramBot(token, { polling: true });
   console.log("authToken = " + response);
   authToken = response;
 });*/
+/*var theatre_arr=[];
+var getTheaters = auth.theater(function(response) {
+  "use strict";
+  console.log(response.data.length);
+  for (var i = 0; i < response.data.length; i++) {
+    for (var x = 0; x < response.data[i].theater.length; x++) {
+
+
+            theatre_arr.push([
+        {
+          text:
+          response.data[i].theater[x].id
+        }
+      ]);
+
+    }
+  }      console.log(theatre_arr);
+});
+
+
+
+[ [ { text: 'pk-lvov2' } ],
+  [ { text: 'pk-lvov' } ],
+  [ { text: 'imax-kiev' } ],
+  [ { text: 'pk-odessa2' } ],
+  [ { text: 'pk-odessa' } ],
+  [ { text: 'pk-sumy' } ],
+  [ { text: 'pk-kharkov' } ] ]
+
+*/
+
+function start(msg) {
+  chat_id = msg.from.id;
+  if (cur_theatre == "" || cur_theatre == null) {
+    get_theatre(msg);
+  } else {
+    films(chat_id, cur_theatre_id);
+  }
+}
+
+function get_theatre(msg) {
+  "use strict";
+  var theatre_but = {
+    parse_mode: "Markdown",
+    reply_markup: {
+      one_time_keyboard: true,
+      resize_keyboard: true,
+      keyboard: [
+        [{ text: "Львів (Forum Lviv)" }, { text: "Львів (King Cross)" }],
+        [{ text: "Київ" }, { text: "Одеса (Таїрова)" }],
+        [{ text: "Одеса (Котовського)" }, { text: "Суми" }],
+        [{ text: "Харків" }]
+      ]
+    }
+  };
+  var fromId = msg.from.id;
+  bot
+    .sendMessage(fromId, "Обери кінотеатр", theatre_but)
+    .then(function(sended) {
+    var chatId = sended.chat.id;
+    var messageId = sended.message_id;
+    console.log(
+      "sended.message_id = " +
+      sended.message_id +
+      " msg.from.id=" +
+      msg.message_id
+    );
+    console.log(sended);
+
+    bot.on("message", msg_1 => {
+      msg_1.reply_to_message = sended;
+      console.log(msg_1);
+    });
+    bot.onReplyToMessage(chatId, messageId, function(message) {
+      if (message.message_id - messageId == 1) {
+        //console.log(opts);
+
+        console.log("OK. I'll search for %s", message.text);
+        cur_theatre = message.text;
+        switch (cur_theatre) {
+          case "Львів (Forum Lviv)":
+            cur_theatre_id = "pk-lvov2";
+            break;
+
+          case "Львів (King Cross)":
+            cur_theatre_id = "pk-lvov";
+            break;
+
+          case "Київ":
+            cur_theatre_id = "imax-kiev";
+            break;
+
+          case "Одеса (Таїрова)":
+            cur_theatre_id = "pk-odessa2";
+            break;
+
+          case "Одеса (Котовського)":
+            cur_theatre_id = "pk-odessa";
+            break;
+
+          case "Суми":
+            cur_theatre_id = "pk-sumy";
+            break;
+
+          case "Харків":
+            cur_theatre_id = "pk-kharkov";
+            break;
+                           }
+        start(msg);
+      }
+    });
+  });
+}
 
 function films(id, theater) {
   "use strict";
@@ -48,7 +163,7 @@ function films(id, theater) {
       ]);
     }
 
-    console.log(but_films);
+    console.log(response.data.theaters[0].theatre_movies.inTheaters.movies.length);
     var jira_films = {
       reply_markup: JSON.stringify({
         inline_keyboard: but_films
@@ -125,16 +240,6 @@ function getLP(msg) {
   });
 }
 
-var getTheaters = auth.theater(function(response) {
-  "use strict";
-  console.log(response.data.length);
-  for (var i = 0; i < response.data.length; i++) {
-    for (var x = 0; x < response.data[i].theater.length; x++) {
-      console.log(response.data[i].theater[x].name);
-    }
-  }
-});
-
 var theaterId = "imax-kiev";
 
 function today() {
@@ -188,7 +293,7 @@ function today() {
         day = "Субота";
         break;
                }
-    var c_date = day + ", " + month + "." + date;
+    var c_date = day + ", " + date + "." + month;
     return c_date;
   }
 
@@ -225,6 +330,14 @@ var getshowtimes = auth.showtimes(theaterId, startDate, endDate, function(
 
 bot.onText(/\/start/, function(msg, match) {
   console.log("start");
+
+  if (cur_theatre == "" || cur_theatre == null) {
+    get_theatre(msg);
+  } else {
+    console.log(cur_theatre);
+  }
+
+  /*
   const id = msg.from.id;
   if (authToken == null || authToken == "") {
     var pre_auth = {
@@ -240,6 +353,16 @@ bot.onText(/\/start/, function(msg, match) {
           ],
           ["Я просто подивлюсь"]
         ]
+      }
+    };
+
+
+var date_but = {
+      parse_mode: "Markdown",
+      reply_markup: {
+        one_time_keyboard: true,
+        resize_keyboard: true,
+        keyboard: date_but
       }
     };
 
@@ -263,13 +386,10 @@ bot.onText(/\/start/, function(msg, match) {
 
       console.log("Counter - " + counter);
     });
-    /*
-bot.onText("Логін", function(msg, match){
-  bot.sendMessage(id, "Введи номер телефону або пошту:");
-	});*/
+
   } else {
     console.log(authToken);
-  }
+  }*/
 });
 
 /*
