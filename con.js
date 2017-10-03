@@ -1,5 +1,5 @@
 //auth func
-var fs = require('fs');
+var fs = require("fs");
 
 var token = function(login, pass, callback) {
   var Client = require("node-rest-client").Client;
@@ -61,7 +61,7 @@ var theater = function(callback) {
 //showtimes
 
 var showtimes = function(theaterId, start, end, callback) {
-  console.log(theaterId+start+end);
+  console.log(theaterId + start + end);
   var Client = require("node-rest-client").Client;
   client = new Client();
   var loginArgs = {
@@ -71,16 +71,16 @@ var showtimes = function(theaterId, start, end, callback) {
   };
   client.get(
     "http://cabinet.planetakino.ua/mapiv2/showtimes?theaterId=" +
-    theaterId +
-    "&endDate=" +
-    end +
-    "&startDate=" +
-    start,
+      theaterId +
+      "&endDate=" +
+      end +
+      "&startDate=" +
+      start,
     loginArgs,
     function(data, response) {
       if (response.statusCode == 200) {
         //console.log("status code:", response.statusCode);
-        //	console.log();
+        //  console.log();
         //console.log("search result:", data.data.showTimes.length);
         callback(data);
       } else {
@@ -92,7 +92,7 @@ var showtimes = function(theaterId, start, end, callback) {
 };
 
 var films = function(id, theater, callback) {
-console.log("films_con "+id+theater);
+  console.log("films_con " + id + theater);
   var Client = require("node-rest-client").Client;
 
   client = new Client();
@@ -115,7 +115,7 @@ console.log("films_con "+id+theater);
       //var i=searchResult.length;
       //searchResult.forEach(function(item, i, searchResult) { console.log( searchResult[i].name );});
       //console.log('search result:', searchResult[1].name);
-   /* --save to file   var json_file = JSON.stringify(searchResult);
+      /* --save to file   var json_file = JSON.stringify(searchResult);
       fs.writeFile("./movies/"+theater+"_movie.json", json_file, function(err) {
     if(err) {
         return console.log(err);
@@ -152,4 +152,3 @@ module.exports.showtimes = showtimes;
 module.exports.theater = theater;
 module.exports.token = token;
 module.exports.films = films;
-
