@@ -1,4 +1,5 @@
 //auth func
+var fs = require('fs');
 
 var token = function(login, pass, callback) {
   var Client = require("node-rest-client").Client;
@@ -60,6 +61,7 @@ var theater = function(callback) {
 //showtimes
 
 var showtimes = function(theaterId, start, end, callback) {
+  console.log(theaterId+start+end);
   var Client = require("node-rest-client").Client;
   client = new Client();
   var loginArgs = {
@@ -90,6 +92,7 @@ var showtimes = function(theaterId, start, end, callback) {
 };
 
 var films = function(id, theater, callback) {
+console.log("films_con "+id+theater);
   var Client = require("node-rest-client").Client;
 
   client = new Client();
@@ -112,6 +115,14 @@ var films = function(id, theater, callback) {
       //var i=searchResult.length;
       //searchResult.forEach(function(item, i, searchResult) { console.log( searchResult[i].name );});
       //console.log('search result:', searchResult[1].name);
+   /* --save to file   var json_file = JSON.stringify(searchResult);
+      fs.writeFile("./movies/"+theater+"_movie.json", json_file, function(err) {
+    if(err) {
+        return console.log(err);
+    }
+
+    console.log("The file was saved!");
+}); */
       callback(searchResult);
     }
   );
