@@ -16,8 +16,10 @@ var cur_day_system;
 var cur_theatre;
 var cur_theatre_id;
 var chat_id;
+var cur_movieuid;
 var cur_movieName;
 var cur_showtime;
+var but_showTimes = [];
 var change_but; // кнопки для зміни дати або кінотеатру
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
@@ -58,8 +60,53 @@ var getTheaters = auth.theater(function(response) {
   [ { text: 'pk-kharkov' } ] ]
 
 */
+function getTime(timeBegin) {
+  var date = new Date(timeBegin);
+  var hour = date.getHours();
+  if (hour < 10) {
+    hour = "0" + hour;
+  }
+  var minute = date.getMinutes();
+  if (minute < 10) {
+    minute = "0" + minute;
+  }
+
+  return hour + ":" + minute;
+}
+
+function goodTechId(technologyId) {
+  var tId;
+  switch (technologyId) {
+    case "Cinetech+2D":
+      tId = "CINETECH+ 2D";
+      break;
+    case "Cinetech+3D":
+      tId = "CINETECH+ 3D";
+      break;
+    case "imax-2d":
+      tId = "IMAX 2D";
+      break;
+    case "imax-3d":
+      tId = "IMAX 3D";
+      break;
+    case "4dx":
+      tId = "4DX 2D";
+      break;
+    case "4dx-3d":
+      tId = "4DX 3D";
+      break;
+    case "RE'LUX-2D":
+      tId = "RE'LUX 2D";
+      break;
+    case "RE'LUX-3D":
+      tId = "RE'LUX 3D";
+      break;
+                      }
+  return tId;
+}
+
 function showtimes(msg, uid, cur_day) {
-  console.log(cur_movieName);
+  //console.log(cur_movieName);
   cur_day_system = cur_day.split(", ");
   cur_day_system_right = cur_day_system[1].split(".");
   var now = new Date();
@@ -84,13 +131,38 @@ function showtimes(msg, uid, cur_day) {
     cur_theatre_id,
     cur_day_system,
     endDate,
-    function(response) {
-      console.log("Сьогодні - " + response.data.showTimes.length + " сеанси");
-      for (var i = 0; i < response.data.showTimes.length; i++) {
-        if (response.data.showTimes[i].movieId == uid) {
-          console.log(response.data.showTimes[i].timeBegin);
+    function(data) {
+      "use strict";
+      console.log(data.data.showTimes.length);
+      console.log("Сьогодні - " + data.data.showTimes.length + " сеанси");
+      for (var i = 0; i < data.data.showTimes.length; i++) {
+        if (data.data.showTimes[i].movieId == cur_movieuid) {
+          console.log(data.data.showTimes[i].timeBegin);
+          var msg_text =
+              getTime(data.data.showTimes[i].timeBegin) +
+              " - " +
+              goodTechId(data.data.showTimes[i].technologyId);
+          /* if (i == 0){but_showTimes.push([{text:msg_text,callback_data:"showTimeid_" +data.data.showTimes[i].id}]);};
+            if (i == 1) {but_showTimes.push("{text:"+msg_text+",callback_data:showTimeid_" +data.data.showTimes[i].id+"}]")};
+            if (i%2 == 0 && i !=0 ) {but_showTimes.push("[{text:"+msg_text+",callback_data:showTimeid_"+data.data.showTimes[i].id+"},")};
+            if (i%2 == 1 && i !=1) {but_showTimes.push("{text:"+msg_text+", callback_data: showTimeid_"+data.data.showTimes[i].id+"}]")};
+            if (i == data.data.showTimes.length){but_showTimes.push([{text:msg_text,callback_data:"showTimeid_" +data.data.showTimes[i].id}]);};*/
+          but_showTimes.push([
+            {
+              text: msg_text,
+              callback_data: "showTimeid_" + data.data.showTimes[i].id
+            }
+          ]);
         }
       }
+      console.log(but_showTimes);
+      var allShotimes_but = {
+        reply_markup: JSON.stringify({
+          inline_keyboard: but_showTimes
+        })
+      };
+      let mes_text = "Обирай зручний час";
+      bot.sendMessage(chat_id, mes_text, allShotimes_but);
     }
   );
 
@@ -632,8 +704,8 @@ bot.on("callback_query", function(msg) {
 
   switch (res[0]) {
     case "filmid":
-      console.log(res[2]);
-      cur_movieName = res[2];
+      //console.log(res[1]);
+      cur_movieuid = res[1];
       showtimes(msg, res[1], cur_day);
       break;
     case "date":

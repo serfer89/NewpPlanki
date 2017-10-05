@@ -61,7 +61,7 @@ var theater = function(callback) {
 //showtimes
 
 var showtimes = function(theaterId, start, end, callback) {
-  console.log(theaterId + start + end);
+  //console.log(theaterId + start + end);
   var Client = require("node-rest-client").Client;
   client = new Client();
   var loginArgs = {
@@ -71,22 +71,23 @@ var showtimes = function(theaterId, start, end, callback) {
   };
   client.get(
     "http://cabinet.planetakino.ua/mapiv2/showtimes?theaterId=" +
-      theaterId +
-      "&endDate=" +
-      end +
-      "&startDate=" +
-      start,
+    theaterId +
+    "&endDate=" +
+    end +
+    "&startDate=" +
+    start,
     loginArgs,
     function(data, response) {
       if (response.statusCode == 200) {
         //console.log("status code:", response.statusCode);
         //  console.log();
         //console.log("search result:", data.data.showTimes.length);
-        callback(data);
+        //callback(data);
       } else {
         console.log(response.statusCode);
         //throw "Login failed :(";
       }
+      callback(data);
     }
   );
 };
