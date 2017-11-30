@@ -1,26 +1,32 @@
 const TelegramBot = require("node-telegram-bot-api");
 var auth = require("./con.js");
 var regex = require("regex-email");
+var await = require('await');
+
+
 // replace the value below with the Telegram token you receive from @BotFather
 const token = "438526782:AAF4JxfUKnhbd2HKe0k-DcMOkUJiXlsLEzc";
-var login;
-var pass;
+
+var login= "";
+var pass = "";
 var counter = 0;
 var pass_fail = 1;
-var authToken;
-var startDate;
-var endDate;
+var authToken ="";
+var startDate ="";
+var endDate="";
 var date_but = [];
-var cur_day;
-var cur_day_system;
-var cur_theatre;
-var cur_theatre_id;
-var chat_id;
-var cur_movieuid;
-var cur_movieName;
-var cur_showtime;
+var cur_day ="";
+var cur_day_system="";
+var cur_theatre ="";
+var cur_theatre_id ="";
+var chat_id = 0;
+var cur_movieuid ="";
+var cur_movieName ="";
+var cur_showtime ="";
 var but_showTimes = [];
-var change_but; // кнопки для зміни дати або кінотеатру
+var change_but =""; // кнопки для зміни дати або кінотеатру
+var cur_shema_html ="";
+var val ="";
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
@@ -105,6 +111,90 @@ function goodTechId(technologyId) {
   return tId;
 }
 
+
+function seatsVal(msg, val)
+
+{
+    "use strict";
+if (val != 'x')
+{
+bot.sendMessage(msg.from.id, "You need "+val+" on "+cur_showtime+" at "+cur_day_system);
+}
+else {
+bot.sendMessage(msg.from.id, "Введи кількість місць")
+    .then(function(sended) {
+    var chatId = sended.chat.id;
+    var messageId = sended.message_id;
+    console.log(
+sended.text
+    );
+    console.log(sended);
+
+    bot.on("message", msg_1 => {
+      msg_1.reply_to_message = sended;
+      console.log("getLP" + msg_1);
+    });
+    bot.onReplyToMessage(chatId, messageId, function(message) {
+      if (message.message_id - messageId == 1) {
+        //console.log(opts);
+
+        console.log("OK. I'll search for %s", message.text);
+      
+      bot.sendMessage(msg.from.id, "You need "+message.text+" on "+cur_showtime+" at "+cur_day_system);
+
+
+
+      }
+        });
+  });
+
+}
+}
+
+function getSeats(msg, showTimesid){
+
+
+cur_showtime = showTimesid;
+
+            var seats_val_but = {
+              reply_markup: JSON.stringify({
+                inline_keyboard: 
+
+[ [ { text: '1',
+      callback_data: 'seatsVal_1' },
+   { text: '2',
+      callback_data: 'seatsVal_2' } ],
+  [ { text: '3',
+      callback_data: 'seatsVal_3' },
+   { text: '4',
+      callback_data: 'seatsVal_4' } ],
+  [ { text: 'Інше',
+      callback_data: 'seatsVal_x' } ],
+  [ { text: 'Назад',
+      callback_data: 'Back_2' } ]  ]
+
+
+              })
+            };      
+bot.sendMessage(msg.from.id, "Обери кількість необхідних місць", seats_val_but);
+
+/*
+var getFreeseats =  auth.getFreeseats(showTimesid, function(get_freeseats) {
+            var free = get_freeseats.data.hallsSheme[0].ticketsLeftForPurchasing;
+            var hallId = get_freeseats.data.hallsSheme[0].hallId;
+            var beasy
+            free = "Обери кількість необхідних місць";
+            console.log(free);
+
+
+
+
+
+
+          })*/
+
+}
+
 function showtimes(msg, uid, cur_day) {
   //console.log(cur_movieName);
   cur_day_system = cur_day.split(", ");
@@ -128,43 +218,91 @@ function showtimes(msg, uid, cur_day) {
     endDate.getFullYear() + "-" + endDate.getMonth() + "-" + endDate.getDate();
 
   var getshowtimes = auth.showtimes(
-    cur_theatre_id,
-    cur_day_system,
-    endDate,
-    function(data) {
-      "use strict";
-      console.log(data.data.showTimes.length);
-      console.log("Сьогодні - " + data.data.showTimes.length + " сеанси");
-      for (var i = 0; i < data.data.showTimes.length; i++) {
-        if (data.data.showTimes[i].movieId == cur_movieuid) {
-          console.log(data.data.showTimes[i].timeBegin);
-          var msg_text =
-              getTime(data.data.showTimes[i].timeBegin) +
-              " - " +
-              goodTechId(data.data.showTimes[i].technologyId);
+  cur_theatre_id,
+  cur_day_system,
+  endDate,
+  function(data) {
+    "use strict";
+   //try {
+    //console.log(data.data.showTimes.length);
+    //console.log("Сьогодні - " + data.data.showTimes.length + " сеанси");
+
+    but_showTimes = null;
+    but_showTimes = [];
+
+
+    for (var i = 0; i < data.data.showTimes.length; i++) {
+      if (data.data.showTimes[i].movieId == cur_movieuid) {
+
+        console.log(data.data.showTimes[i].timeBegin);
+        var msg_text =
+          getTime(data.data.showTimes[i].timeBegin) +
+          " - " +
+          goodTechId(data.data.showTimes[i].technologyId);
+        var callback_txt = data.data.showTimes[i].id+"_"+data.data.showTimes[i].technologyId;
+
+
+           but_showTimes.push([
+              {
+                text: msg_text,
+                callback_data: "showTimeid_" + callback_txt
+              }
+            ]);
+
+        }
+
+          
+            //freeseats
+//console.log("--------------------------"+but_showTimes);
+
+
+
+        
+
+
+
+
+      }
+
+
+console.log(but_showTimes);
+            var allShotimes_but = {
+              reply_markup: JSON.stringify({
+                inline_keyboard: but_showTimes
+              })
+            };
+            let mes_text = "Обирай зручний час";
+            bot.sendMessage(msg.from.id, mes_text, allShotimes_but);
+
+
+
+    
+
+
+
+
+
+  /*} catch(err){
+    console.error(err) 
+  }*/
+
+  }  );
+
+       
+      
+	/*msg_text = msg_text  + 
+              " - " + 
+              await(getshowtimes);
+console.log("---"+await(getFreeseats));*/
+
           /* if (i == 0){but_showTimes.push([{text:msg_text,callback_data:"showTimeid_" +data.data.showTimes[i].id}]);};
             if (i == 1) {but_showTimes.push("{text:"+msg_text+",callback_data:showTimeid_" +data.data.showTimes[i].id+"}]")};
             if (i%2 == 0 && i !=0 ) {but_showTimes.push("[{text:"+msg_text+",callback_data:showTimeid_"+data.data.showTimes[i].id+"},")};
             if (i%2 == 1 && i !=1) {but_showTimes.push("{text:"+msg_text+", callback_data: showTimeid_"+data.data.showTimes[i].id+"}]")};
             if (i == data.data.showTimes.length){but_showTimes.push([{text:msg_text,callback_data:"showTimeid_" +data.data.showTimes[i].id}]);};*/
-          but_showTimes.push([
-            {
-              text: msg_text,
-              callback_data: "showTimeid_" + data.data.showTimes[i].id
-            }
-          ]);
-        }
-      }
-      console.log(but_showTimes);
-      var allShotimes_but = {
-        reply_markup: JSON.stringify({
-          inline_keyboard: but_showTimes
-        })
-      };
-      let mes_text = "Обирай зручний час";
-      bot.sendMessage(chat_id, mes_text, allShotimes_but);
-    }
-  );
+          
+
+
 
   console.log(chat_id + uid + cur_day_system);
 }
@@ -273,7 +411,7 @@ else {console.log("loop1");start(msg);return;}
 }
 
 function get_theatre(msg) {
-  "use strict";
+ "use strict";
 
   var theatre_but = {
     parse_mode: "Markdown",
@@ -306,7 +444,7 @@ function get_theatre(msg) {
       console.log(msg_1);
     });
     bot.onReplyToMessage(chatId, messageId, function(message) {
-      if (message.message_id - messageId == 1) {
+      if (message.message_id - messageId == 1 && chatId == msg.from.id) {
         //console.log(opts);
 
         console.log("OK. I'll search for %s", message.text);
@@ -344,7 +482,9 @@ function get_theatre(msg) {
         return;
       } else {
         console.log("loop1");
+        sended.reply_to_message = "";
         msg_1.reply_to_message = "";
+        msg.reply_to_message = "";
         start(msg);
         return;
       }
@@ -354,7 +494,7 @@ function get_theatre(msg) {
 
 function films(id, theater) {
   //if (theater == "" || theater == null){}
-  "use strict";
+  //"use strict";
   console.log("films started");
   get_films = auth.films(id, theater, function(response) {
     var but_films = []; //
@@ -468,7 +608,7 @@ function getLP(msg) {
   });
 }
 
-var theaterId = "imax-kiev";
+//var theaterId = "imax-kiev";
 
 function today(msg) {
   //console.log("today_func - start");
@@ -528,6 +668,8 @@ function today(msg) {
 
   console.log(u_to_js(timestamp));
   var i = 0;
+      date_but = null;
+      date_but = [];
   for (i = 0; i < 4; i++) {
     switch (i) {
       case 0:
@@ -582,30 +724,26 @@ function today(msg) {
   bot.sendMessage(chat_id, "Обери дату", dates_but).then(function(sended) {
     var chatId = sended.chat.id;
     var messageId = sended.message_id;
-    console.log(
-      "sended.message_id = " +
-      sended.message_id +
-      " msg.from.id=" +
-      msg.message_id
-    );
+    //console.log("sended.message_id = "+sended.message_id+" msg.from.id=" +msg.message_id);
     //console.log(sended);
 
     bot.on("message", msg_1 => {
       msg_1.reply_to_message = sended;
       //console.log(msg_1);
     });
-    bot.onReplyToMessage(chatId, messageId, function(message) {
+    bot.onReplyToMessage(chat_id, messageId, function(message) {
       if (message.message_id - messageId == 1) {
         //console.log(opts);
         console.log("OK. I'll search for %s", message.text);
         cur_day = message.text;
-        sended.reply_to_message = "";
+        sended.reply_to_message = ""; //----24.10
+        msg.reply_to_message = "";
         start(msg);
         return;
       } else {
         console.log("loop2");
-        //msg_1.reply_to_message = "";
-        //start(msg);
+        msg_1.reply_to_message = "";
+        start(msg);
         return;
       }
     });
@@ -711,6 +849,14 @@ bot.on("callback_query", function(msg) {
     case "date":
       cur_day = res[1];
       break;
+    case "showTimeid":
+      //console.log("---------------"+res[2]);
+      getSeats(msg, res[1], cur_day);
+      break;
+    case "seatsVal":
+      //console.log("---------------"+res[2]);
+     seatsVal(msg, res[1], cur_day);
+     break;
                 }
 });
 /*
